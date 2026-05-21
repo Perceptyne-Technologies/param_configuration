@@ -49,7 +49,13 @@ class FileLocationLayer(ConfigLayer):
 
     def load(self, path: Path) -> Union[str, Path, None]:
         """Try to load the file from the layer."""
-        directory = self.get_config_directory() / self._layer_folder
+        layer_path = Path(self._layer_folder)
+
+        if layer_path.is_absolute():
+            directory = layer_path
+        else:
+            directory = self.get_config_directory() / layer_path
+
         converted_path = Path(str(path).replace("config:", str(directory)))
         if converted_path.exists():
             return converted_path
@@ -57,4 +63,12 @@ class FileLocationLayer(ConfigLayer):
 
     def get_files(self) -> Dict[str, Union[List[Path], str]]:
         """Return all possible files."""
-        return walk_directory(directory=self.get_config_directory() / self._layer_folder)
+
+        layer_path = Path(self._layer_folder)
+
+        if layer_path.is_absolute():
+            directory = layer_path
+        else:
+            directory = self.get_config_directory() / layer_path
+
+        return walk_directory(directory=directory)

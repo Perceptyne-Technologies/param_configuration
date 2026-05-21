@@ -28,12 +28,24 @@ class PathResolver:
 
     def __init__(self):
         self._layers: list[ConfigLayer] = []
+        project_params_dir = os.getenv("PR_PROJECT_PARAMS_DIR")
+        robot_params_dir = os.getenv("PR_ROBOT_PARAMS_DIR")
 
-        # Add the default config layers, order matters!
-        if os.getenv("PARAM_CONFIG_DIR"):  # Add model and device layers only if ENV variable exists
-            self.add_layer(layer=FileLocationLayer(layer_folder=os.getenv("PARAM_DEVICE_DIR", "device")))
-            self.add_layer(layer=FileLocationLayer(layer_folder="model"))
-        self.add_layer(layer=RosParamPackageLayer())
+        if robot_params_dir:
+            self.add_layer(
+                FileLocationLayer(
+                    layer_folder=robot_params_dir
+                )
+            )
+
+        if project_params_dir:
+            self.add_layer(
+                FileLocationLayer(
+                    layer_folder=project_params_dir
+                )
+            )
+
+        self.add_layer(RosParamPackageLayer())
 
     def resolve_path(
         self, path: Union[str, Path], config_layers: Optional[list[ConfigLayer]] = None
@@ -54,10 +66,24 @@ class PathResolver:
 
         layers = self._layers if config_layers is None else config_layers
 
+        print("\n=== RESOLVING ===")
+        print(f"Requested path: {path}")
+
         for layer in layers:
+            print(f"\nChecking layer: {layer.name}")
+
             data = layer.load(path)
+
+            print(f"Resolved to: {data}")
+
             if data is not None:
+                print(f"RETURNING: {data}")
                 return data
+
+        # for layer in layers:
+        #     data = layer.load(path)
+        #     if data is not None:
+        #         return data
 
         raise ValueError(f"Could not resolve {path}")
 
