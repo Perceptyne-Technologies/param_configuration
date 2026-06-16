@@ -48,7 +48,6 @@ class FileLocationLayer(ConfigLayer):
         raise RuntimeError("Set PARAM_CONFIG_DIR environmental variable that points to configuration directory")
 
     def load(self, path: Path) -> Union[str, Path, None]:
-        """Try to load the file from the layer."""
         layer_path = Path(self._layer_folder)
 
         if layer_path.is_absolute():
@@ -56,11 +55,19 @@ class FileLocationLayer(ConfigLayer):
         else:
             directory = self.get_config_directory() / layer_path
 
-        converted_path = Path(str(path).replace("config:", str(directory)))
+        raw = str(path)
+
+        raw = raw.replace("config://", "")
+
+        raw = raw.replace("pr_params/", "")
+
+        converted_path = directory / raw
+
         if converted_path.exists():
             return converted_path
-        return None
 
+        return None
+    
     def get_files(self) -> Dict[str, Union[List[Path], str]]:
         """Return all possible files."""
 

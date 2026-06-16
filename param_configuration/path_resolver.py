@@ -21,6 +21,7 @@ from typing import Dict, Optional, Union
 from param_configuration.config_layer import ConfigLayer
 from param_configuration.config_layers.file_location_layer import FileLocationLayer
 from param_configuration.config_layers.ros_package import RosParamPackageLayer
+from ament_index_python.packages import get_package_share_directory
 
 
 class PathResolver:
@@ -30,7 +31,7 @@ class PathResolver:
         self._layers: list[ConfigLayer] = []
         project_params_dir = os.getenv("PR_PROJECT_PARAMS_DIR")
         robot_params_dir = os.getenv("PR_ROBOT_PARAMS_DIR")
-
+        base_params_dir = get_package_share_directory("pr_params") + "/params"+"/base"
         if robot_params_dir:
             self.add_layer(
                 FileLocationLayer(
@@ -45,7 +46,7 @@ class PathResolver:
                 )
             )
 
-        self.add_layer(RosParamPackageLayer())
+        self.add_layer(FileLocationLayer(layer_folder=base_params_dir))
 
     def resolve_path(
         self, path: Union[str, Path], config_layers: Optional[list[ConfigLayer]] = None
@@ -66,24 +67,10 @@ class PathResolver:
 
         layers = self._layers if config_layers is None else config_layers
 
-        print("\n=== RESOLVING ===")
-        print(f"Requested path: {path}")
-
         for layer in layers:
-            print(f"\nChecking layer: {layer.name}")
-
             data = layer.load(path)
-
-            print(f"Resolved to: {data}")
-
             if data is not None:
-                print(f"RETURNING: {data}")
                 return data
-
-        # for layer in layers:
-        #     data = layer.load(path)
-        #     if data is not None:
-        #         return data
 
         raise ValueError(f"Could not resolve {path}")
 
