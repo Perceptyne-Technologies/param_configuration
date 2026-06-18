@@ -615,3 +615,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["param_configuration*"]
+
+[project]
+name = "param-configuration"
