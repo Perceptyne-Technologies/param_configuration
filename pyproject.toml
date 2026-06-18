@@ -618,3 +618,4 @@ include = ["param_configuration*"]
 
 [project]
 name = "param-configuration"
+version = "0.0.0"
